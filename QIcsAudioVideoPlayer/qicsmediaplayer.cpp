@@ -66,7 +66,12 @@ int QIcsMediaPlayer::currentTrackIndex() const
 
 void QIcsMediaPlayer::play() const
 {
-    if (!m_playerView->isVisible()) m_playerView->show();
+    if (!m_playerView->isVisible()){
+
+        m_playerView->show();
+    } else {
+        m_playerView->raise();
+    }
     m_audioVideoPlayerController->playTrack();
     translatePlayState();
 }
