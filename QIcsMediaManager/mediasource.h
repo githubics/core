@@ -60,17 +60,34 @@ public:
     /** Returns the deviceUrl as QUrl */
     const QUrl deviceUrl() const;
 
+//    /** Saves mediaObject to the file fileName, return true on success, false -- otherwise**/
+//    bool saveJsonObjectToFile( QString fileName, QJsonObject mediaObject );
+
+//    /** Reads QJsonObject from the file fileName**/
+//    QJsonObject getMediaSourceListFromFile( QString fileName );
+
 
 signals:
-    void mediaSourcePlaylistChanged(const MediaSource * mediaSource);
+    /** The MediaSource notifies the MediaManager that the playlist has changed
+     *  with this signal. The payload is a pointer to the MediaSource instance and
+     *  the MediaManager can then grab the playlists by MediaType from the MediaSource
+     **/
+    void mediaSourcePlaylistChanged(const MediaSource * mediaSource) const;
+
     void deviceUrlChanged(QUrl deviceUrl);
 
 private slots:
-
     void setDeviceUrl(QUrl deviceUrl);
-    void setMediaSourcePlaylist(QJsonObject mediaSourcePlaylist);
+    /** MediaDevice emits a signal when a playlist has been updated that is connected
+     *  to this slot and that sets the new playlist. MediaSource emits the mediaSourcePlaylistChanged
+     *  signal when this function exits.
+     **/
+    void setMediaSourcePlaylist(const QJsonObject & mediaSourcePlaylist);
 
 private:
+    /** THE PLAYLIST */
+//    QJsonObject playList;
+
     MediaDeviceInterface * m_device;
     QJsonObject m_mediaSourcePlaylist;
     QUrl m_deviceUrl;

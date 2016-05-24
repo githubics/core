@@ -67,7 +67,7 @@ public:
     QVariantList videoPlaylist() const;
     int currentIndex() const;
     QJsonObject currentTrack() const;
-    MediaPlayerInterface::PlayState playState() const;
+    mmTypes::PlayState playState() const;
 
 
 
@@ -78,7 +78,7 @@ public slots:
     void setActiveMediaSession(QString activeMediaSession);
     void setActiveMediaSessionPlaylist(const QJsonArray playList);
     void setMediaSessions(const QStringList mediaSessions);
-    void setPlayState(const MediaPlayerInterface::PlayState playState);
+    void setPlayState(const mmTypes::PlayState playState);
     void setCurrentTrackIndex(const int index);
 
 signals:

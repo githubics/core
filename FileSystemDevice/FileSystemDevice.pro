@@ -16,12 +16,14 @@ DESTDIR = ../plugins
 
 SOURCES += \
     filesystemdevicefactory.cpp \
-    filesystemdevice.cpp
+    filesystemdevice.cpp \
+    indexingworker.cpp
 
 HEADERS += \
 ../QIcsMediaManager/mediadeviceinterface.h \
     filesystemdevicefactory.h \
-    filesystemdevice.h
+    filesystemdevice.h \
+    indexingworker.h
 
 DISTFILES += FileSystemDevice.json
 

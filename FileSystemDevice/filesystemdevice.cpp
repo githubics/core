@@ -17,190 +17,126 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 #if ! defined QT_NO_DEBUG_OUTPUT
-#define QT_NO_DEBUG_OUTPUT
+//#define QT_NO_DEBUG_OUTPUT
 #endif
 #include <QDebug>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QDir>
-#include <QUrl>
-#include <QProcess>
+
 #include "filesystemdevice.h"
+#include "indexingworker.h"
 
-#if defined USE_MEDIAINFO
-#include "MediaInfo/MediaInfoList.h"
-#define QSLWSTR( _ARG_ ) QStringLiteral( _ARG_ ).toStdWString()
+#include <QThread>
+
+#if ! defined QT_NO_DEBUG_OUTPUT
+#include <QTime>
+QTime stopWatch;
 #endif
-
-// TODO:
-// This is ready to be moved into a QThread now.
-class IndexingWorker : public QObject
-{
-public:
-    IndexingWorker(QObject * parent=0)
-        : QObject(parent) {
-        // TODO: These need to be synced with the capabilities of the corresponding
-        // players somehow.
-        // Maybe define a set of AudioFileMediaTypes in the MediaManager and use them here.
-        audioFilters << "*.mp3" << "*.ogg" << "*.wav";
-        videoFilters << "*.mp4" << "*.mkv" << "*.m4v" << "*.avi" << "*.wmv" << "*.mov";
-    }
-    ~IndexingWorker(){}
-
-    void startIndexing(const QUrl url);
-
-    QJsonArray audioFiles() const {return m_audioFiles;}
-    QJsonArray videoFiles() const {return m_videoFiles;}
-private:
-    void indexDirectory(const QString dirPath);
-    void mediaInfo(const QStringList fileList);
-
-private:
-    QJsonArray m_audioFiles;
-    QJsonArray m_videoFiles;
-    QStringList audioFilters;
-    QStringList videoFilters;
-};
-
-void IndexingWorker::startIndexing(const QUrl url)
-{
-    m_audioFiles = QJsonArray();
-    m_videoFiles = QJsonArray();
-    indexDirectory(url.toLocalFile());
-}
-
-
-void IndexingWorker::mediaInfo(const QStringList fileList)
-{
-    if (fileList.isEmpty()) return;
-    QStringList generalParams;
-    generalParams << "CompleteName" << "FolderName" << "FileName" << "FileExtension" << "Artist" << "Cover_Data"
-                  << "FileSize" << "Duration" << "FrameRate" << "BitRate" << "BitRate_Mode/String"
-                  << "Format" << "InternetMediaType"
-                  << "Title" << "Season" << "Movie"
-                  << "Album" << "Album_More" << "Album/Performer"
-                  << "Part" << "Track" << "Track/Position" << "Compilation"
-                  << "Performer" << "Genre" << "Mood"
-                  << "Released_Date" << "Original/Released_Date" << "Recorded_Date"
-                  << "Encoded_Application" << "Encoded_Library" << "BPM"
-                  << "Cover" << "Cover_Mime" << "Lyrics"
-                  << "Added_Date";
-    QString generalInform;
-    generalInform="General;";
-    foreach(QString s, generalParams) {
-        generalInform += QString("\%%1\%|").arg(s);
-    }
-    generalInform+="\\n";
-    MediaInfoLib::MediaInfoList MI;
-    MI.Option(QSLWSTR("ParseSpeed"), QSLWSTR("0"));
-    MI.Option(QSLWSTR("Language"), QSLWSTR("raw"));
-    MI.Option(QSLWSTR("ReadByHuman"), QSLWSTR("0"));
-    MI.Option(QSLWSTR("Legacy"), QSLWSTR("0"));
-    int nfiles;
-    foreach (QString file, fileList) {
-        nfiles=MI.Open(file.toStdWString(), MediaInfoLib::FileOption_NoRecursive);
-    }
-    qDebug() << Q_FUNC_INFO << "Opened" << nfiles << "files";
-    if (nfiles!=fileList.count()) {
-        qWarning() << Q_FUNC_INFO << "some files could not be opened, have" << nfiles << "out of" << fileList.count();
-    }
-
-    qDebug() << Q_FUNC_INFO << generalInform;
-    MI.Option(QStringLiteral("Inform").toStdWString(), generalInform.toStdWString());
-    QString informOptionExample=QString::fromStdWString(MI.Inform());
-    qDebug() << Q_FUNC_INFO << qPrintable("\r\n\r\nGeneral Inform\r\n") << qPrintable(informOptionExample);
-
-    QStringList informResult=informOptionExample.split('\n',QString::SkipEmptyParts);
-    QVariantMap resMap;
-    foreach (QString res, informResult) {
-        qDebug() << Q_FUNC_INFO << res;
-        QStringList resList=res.split("|");
-        qDebug() << resList.count() << generalParams.count();
-        Q_ASSERT((resList.count()-1)==generalParams.count());
-        for (int i=0;i<resList.count()-1;++i) {
-            qDebug() << generalParams[i] << ":" << resList[i];
-            resMap[generalParams[i]] = resList[i];
-        }
-        QJsonObject resObject=QJsonObject::fromVariantMap(resMap);
-        QString mimeType=resMap["InternetMediaType"].toString();
-        if (mimeType.startsWith("audio")) m_audioFiles.append(resObject);
-        else if (mimeType.startsWith("video")) m_videoFiles.append(resObject);
-        else {
-            qWarning() << Q_FUNC_INFO << "mimetype for file" << resMap["CompleteName"]<< "not one of audio or video but" << resMap["InternetMediaType"];
-        }
-        qDebug() << Q_FUNC_INFO << "resObject" << resObject;
-    }
-}
-
-
-void IndexingWorker::indexDirectory(const QString dirPath)
-{
-    QDir dir(dirPath);
-    qDebug() << Q_FUNC_INFO << dir << dirPath;
-
-    // FIXME: this should be configurable and is different on Linux and Mac
-    if (dirPath.count("/")>6) return;
-    QStringList mediaInfoList;
-
-    dir.setFilter(QDir::Dirs|QDir::NoDotAndDotDot);
-    QStringList dirList=dir.entryList();
-
-    dir.setFilter(QDir::Files);
-    dir.setNameFilters(audioFilters);
-    QStringList audioList=dir.entryList();
-    foreach (QString a, audioList)
-        mediaInfoList.append(dirPath+"/"+a);
-
-    dir.setNameFilters(videoFilters);
-    QStringList videoList=dir.entryList();
-    foreach (QString v, videoList)
-        mediaInfoList.append(dirPath+"/"+v);
-
-    mediaInfo(mediaInfoList);
-
-    qDebug() << Q_FUNC_INFO << "appended" <<audioList.count()<<"audio files and"<<videoList.count()<<"video files in"<<dir.absolutePath();
-    qDebug() << Q_FUNC_INFO << "moving on to" <<dirList;
-
-    foreach (QString dirName, dirList) {
-        // FIXME: take this out and make directory filters configurable
-//        if (!dirName.startsWith("rolands"))
-            indexDirectory(dirPath+"/"+dirName);
-
-    }
-}
-
 
 FileSystemDevice::FileSystemDevice(QObject *parent)
     : MediaDeviceInterface(parent)
+    , thread(0)
+    , worker(0)
+    , busy(false)
 {
-
+    thread = new QThread;
+    worker = new IndexingWorker;
+    connect(thread,&QThread::finished,worker,&QObject::deleteLater);
+    connect(this,&FileSystemDevice::startIndexing,worker,&IndexingWorker::startIndexing);
+    connect(worker,&IndexingWorker::indexingFinished,this,&FileSystemDevice::indexingFinished);
+    worker->moveToThread(thread);
+    thread->start();
 }
 
-void FileSystemDevice::updateMediaSourceList(const QUrl url) const
+FileSystemDevice::~FileSystemDevice()
 {
-    emit mediaSourceListUpdate(getMediaSourceList(url));
+    if (thread) {
+        thread->quit();
+        thread->deleteLater();
+    }
 }
 
-QJsonObject FileSystemDevice::getMediaSourceList(const QUrl url) const
+void FileSystemDevice::updateMediaPlaylist(const QUrl & url)
 {
-    IndexingWorker worker;
-    worker.startIndexing(url);
+    qDebug() << Q_FUNC_INFO << url << "busy=" << busy;
+    if (!busy) { // only one indexing job at a time
+        busy=true;
+#if ! defined QT_NO_DEBUG_OUTPUT
+        stopWatch.start();
+#endif
+        emit startIndexing(url);
+    }
+}
+
+void FileSystemDevice::indexingFinished()
+{
+    busy=false;
+    qDebug() << Q_FUNC_INFO << "busy=" << busy;
+    QJsonObject mediaObject;
+    // FIXME: the url is not known here currently -
+    // we likely want this to become the identifier for the device though
+    mediaObject.insert("DeviceUrl","DeviceUrl"/*url.url()*/);
+    mediaObject.insert("AudioFile",worker->audioFiles());
+    mediaObject.insert("VideoFile",worker->videoFiles());
+#if ! defined QT_NO_DEBUG_OUTPUT
+    qDebug() << Q_FUNC_INFO << "indexing"
+             << worker->audioFiles().count() << "audiofiles"
+             << worker->videoFiles().count() << "videofiles"
+             << "finished in" << stopWatch.elapsed()/1000.f;
+#endif
+    emit mediaPlaylistUpdated(mediaObject);
+}
+
+const QJsonObject FileSystemDevice::getMediaPlaylist(const QUrl & url) const
+{
+    // NOTE: this makes a call across threads. It will block both threads.
+    worker->startIndexing(url);
 
     // TODO: Define this object somewhere and just fill it here with
     // data.
-    // FIXME: If we want C++11 here we have to CONFIG += c++11 not only here
-    // but also in MediaInforLib and ZenLib which are statically linked agains this plugin
-#if 0
-    QJsonObject mediaObject = {
-        {"DeviceUrl",url.url()}, // this is likely obsolete
-        {"AudioFile",worker.audioFiles()},
-        {"VideoFile",worker.videoFiles()}
-    };
-#endif
     QJsonObject mediaObject;
     mediaObject.insert("DeviceUrl",url.url()); // this is likely obsolete
-    mediaObject.insert("AudioFile",worker.audioFiles());
-    mediaObject.insert("VideoFile",worker.videoFiles());
+    mediaObject.insert("AudioFile",worker->audioFiles());
+    mediaObject.insert("VideoFile",worker->videoFiles());
     return mediaObject;
 }
+
+
+#if 0
+bool FileSystemDevice::saveJsonObjectToFile( QString fileName, QJsonObject mediaObject )
+{
+    QFile saveFile( fileName );
+
+    if (!saveFile.open(QIODevice::WriteOnly)) {
+        // TODO: Handle error if device write proptected
+        qDebug() << Q_FUNC_INFO << "Couldn't save to file";
+        qWarning("Couldn't open save file.");
+        return false;
+    }
+
+    QJsonDocument saveDoc( mediaObject );
+    int res = saveFile.write( saveDoc.toJson() );
+    qDebug() << Q_FUNC_INFO << " Written: " << res << " bytes";
+
+    return true;
+}
+
+QJsonObject FileSystemDevice::getMediaSourceListFromFile( QString fileName )
+{
+    QJsonObject res;
+    QFile loadFile( fileName );
+
+     if (!loadFile.open(QIODevice::ReadOnly)) {
+         // TODO: Handle error properly
+         qWarning("Couldn't open save file.");
+         return res;
+     }
+
+     QByteArray saveData = loadFile.readAll();
+
+     QJsonDocument loadDoc( QJsonDocument::fromJson(saveData) );
+
+     res = loadDoc.object();
+
+     return res;
+}
+
+#endif

@@ -36,17 +36,23 @@ class MediaDeviceInterface : public QObject
 public:
     explicit MediaDeviceInterface(QObject * parent = 0) : QObject(parent) {}
     virtual ~MediaDeviceInterface() {}
-    /** Possibly Asynchronous call to update the media source list.
-     *  When a list is available the signal mediaSourceListUpdate is emitted
-     */
-    virtual void updateMediaSourceList(const QUrl url) const = 0;
 
-    /** Synchronous call the will return with an updated source list */
-    virtual QJsonObject getMediaSourceList(const QUrl url) const = 0;
+    /** Asynchronous call to update the media playlist.
+     *  When a list is available the signal mediaPlaylistUpdated()
+     *  is emitted
+     */
+    virtual void updateMediaPlaylist(const QUrl & url) = 0;
+
+    /** Synchronous call returns an updated source list */
+    virtual const QJsonObject getMediaPlaylist(const QUrl & url) const = 0;
+
+public slots:
 
 signals:
-    /** Signal emitted when an updated source list is available */
-    void mediaSourceListUpdate(const QJsonObject) const;
+    /** The signal is emitted when the FileSystemDevice has an updated
+     *  MediaPlaylist. The argument is a reference to the new playlist
+     **/
+    void mediaPlaylistUpdated(const QJsonObject & playList);
 };
 
 #endif // MEDIADEVICEINTERFACE

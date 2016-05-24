@@ -46,7 +46,7 @@ public:
     void setMediaPlaylist(const QStringList playList);
     const QSet<QString> supportedFileSuffixes() const;
     PlayState playState() const {return m_playState;}
-    virtual int currentTrackIndex() const {return m_mediaPlaylist->currentIndex();}
+    int currentTrackIndex() const {return m_mediaPlaylist->currentIndex();}
 
 protected:
 

@@ -43,20 +43,6 @@ const QSet<QString> QIcsMediaPlayer::supportedFileSuffixes() const
     return suffixes;
 }
 
-QQmlEngine * QIcsMediaPlayer::engine() const
-{
-    return m_engine;
-}
-
-QUrl QIcsMediaPlayer::qml() const
-{
-    return QUrl(QStringLiteral("file:///home/ics/core/QIcsAudioVideoPlayer/main.qml"));
-}
-
-QString QIcsMediaPlayer::currentMedia() const
-{
-    return m_audioVideoPlayerController->track();
-}
 
 int QIcsMediaPlayer::currentTrackIndex() const
 {

@@ -16,10 +16,17 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
+#if ! defined QT_NO_DEBUG_OUTPUT
+#define QT_NO_DEBUG_OUTPUT
+#endif
+#include <QDebug>
+
 #include "mediasource.h"
 #include "mediadeviceinterface.h"
 
 #include <QJsonArray>
+#include <QJsonDocument>
+
 
 MediaSource::MediaSource(MediaDeviceInterface * device, const QUrl & deviceUrl, QObject * parent)
     : QObject(parent)
@@ -27,12 +34,12 @@ MediaSource::MediaSource(MediaDeviceInterface * device, const QUrl & deviceUrl, 
     , m_deviceUrl(deviceUrl)
 {
     m_device->setParent(this);
-    connect(m_device,&MediaDeviceInterface::mediaSourceListUpdate,this,&MediaSource::setMediaSourcePlaylist);
+    connect(m_device,&MediaDeviceInterface::mediaPlaylistUpdated,this,&MediaSource::setMediaSourcePlaylist);
 }
 
 void MediaSource::updateMediaSourcePlaylist()
 {
-    m_device->updateMediaSourceList(m_deviceUrl);
+    m_device->updateMediaPlaylist(m_deviceUrl);
 }
 
 QJsonObject MediaSource::mediaSourcePlaylist() const
@@ -40,11 +47,13 @@ QJsonObject MediaSource::mediaSourcePlaylist() const
     return m_mediaSourcePlaylist;
 }
 
-void MediaSource::setMediaSourcePlaylist(QJsonObject mediaSourcePlaylist)
+void MediaSource::setMediaSourcePlaylist(const QJsonObject & mediaSourcePlaylist)
 {
+    qDebug() << Q_FUNC_INFO;
     if (m_mediaSourcePlaylist == mediaSourcePlaylist)
         return;
 
+    qDebug() << Q_FUNC_INFO << "setting new mediaSourcePlaylist";
     m_mediaSourcePlaylist = mediaSourcePlaylist;
     emit mediaSourcePlaylistChanged(this);
 }
