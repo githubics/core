@@ -29,6 +29,16 @@ Item {
             right: playListRect.left
             rightMargin: 5
         }
+        color: "black"
+        Image{
+            id: defaultCoverImage
+            anchors.centerIn: parent
+            visible: !coverImage.visible
+            source: "qrc:/simpleuicontroller/Assets/ICS_logo150.png"
+
+
+        }
+
         Image{
             id: coverImage
             anchors.fill: parent
