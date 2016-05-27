@@ -22,6 +22,9 @@
 #include <QObject>
 #include <QJsonArray>
 #include <QUrl>
+#include <QHash>
+#include <QDateTime>
+
 
 class IndexingWorker : public QObject
 {
@@ -49,6 +52,7 @@ signals:
 
 private:
     void indexDirectory(const QString dirPath);
+    void buildDirectoryTree( const QString dirPath );
     void mediaInfo(const QStringList fileList);
 
 private:
@@ -56,6 +60,14 @@ private:
     QJsonArray m_videoFiles;
     QStringList audioFilters;
     QStringList videoFilters;
+
+
+    //QString m_map_file_name;
+    //QMutex m_mutex;
+    //QMap<QString,QString> m_dir_time_value_map;
+    QHash<QString, QDateTime> m_directoryDate;
+    //QJsonValue m_json_obj_dir_access_time;
+
 };
 
 
