@@ -17,7 +17,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 #if ! defined QT_NO_DEBUG_OUTPUT
-//#define QT_NO_DEBUG_OUTPUT
+#define QT_NO_DEBUG_OUTPUT
 #endif
 #include <QDebug>
 
@@ -77,7 +77,7 @@ void FileSystemDevice::indexingFinished()
     mediaObject.insert("AudioFile",worker->audioFiles());
     mediaObject.insert("VideoFile",worker->videoFiles());
 #if ! defined QT_NO_DEBUG_OUTPUT
-    qDebug() << Q_FUNC_INFO << "indexing"
+    qDebug() << Q_FUNC_INFO << "indexed"
              << worker->audioFiles().count() << "audiofiles"
              << worker->videoFiles().count() << "videofiles"
              << "finished in" << stopWatch.elapsed()/1000.f;

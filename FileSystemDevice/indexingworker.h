@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include <QJsonArray>
+#include <QStringList>
 #include <QUrl>
 
 class IndexingWorker : public QObject
