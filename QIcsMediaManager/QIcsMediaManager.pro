@@ -27,7 +27,3 @@ HEADERS += \
     devicemanagerinterface.h \
     mediamanagertypes.h
 
-#Plugins.files = $$OUT_PWD/../plugins/lib*.so
-#message($$Plugins.files)
-#Plugins.path = /opt/QIcsMediaManager/plugins
-#INSTALLS += Plugins

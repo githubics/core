@@ -27,7 +27,9 @@ HEADERS += \
 DISTFILES += \
     SimpleDeviceManager.json
 
-#unix {
-#    target.path = /usr/lib
-#    INSTALLS += target
-#}
+linux-oe-g++ {
+    # Default rules for deployment.
+    include(deployment.pri)
+    target.path=/opt/QIcsMediaManager/plugins
+    INTALLS+=target
+}

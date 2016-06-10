@@ -32,9 +32,10 @@ Item {
         color: "black"
         Image{
             id: defaultCoverImage
-            anchors.centerIn: parent
+            anchors.fill: parent
+            fillMode: Image.PreserveAspectFit
             visible: !coverImage.visible
-            source: "qrc:/simpleuicontroller/Assets/ICS_logo150.png"
+            source: "qrc:/simpleuicontroller/Assets/ICSDefaultCoverArt.png"
 
 
         }

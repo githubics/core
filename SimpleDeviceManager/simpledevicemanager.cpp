@@ -48,7 +48,7 @@ SimpleDeviceManager::SimpleDeviceManager(QObject * parent)
     m_usbWatchPath = USBWATCHPATH;
     m_usbWatcher = new QFileSystemWatcher();
     m_usbWatcher->addPath(m_usbWatchPath);
-    connect(m_usbWatcher, &QFileSystemWatcher::directoryChanged, [=](){ QTimer::singleShot(1000, this, &SimpleDeviceManager::deviceChanged); } );
+    connect(m_usbWatcher, &QFileSystemWatcher::directoryChanged, [=](){ QTimer::singleShot(2000, this, &SimpleDeviceManager::deviceChanged); } );
 //    QTimer::singleShot(2000,[=](){emit deviceCreated("USBDevice",QUrl::fromLocalFile("/Volumes/rkrause/mm2_test"));});
 //    QTimer::singleShot(4000,[=](){emit deviceCreated("USBDevice",QUrl::fromLocalFile("/media/sv-desktop-106/7DA2-BF26/Bohemian Rhapsody/"));});
 
