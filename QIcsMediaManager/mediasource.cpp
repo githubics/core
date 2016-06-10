@@ -22,7 +22,6 @@
 #include <QDebug>
 
 #include "mediasource.h"
-#include "mediadeviceinterface.h"
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -34,7 +33,7 @@ MediaSource::MediaSource(MediaDeviceInterface * device, const QUrl & deviceUrl, 
     , m_deviceUrl(deviceUrl)
 {
     m_device->setParent(this);
-    connect(m_device,&MediaDeviceInterface::mediaPlaylistUpdated,this,&MediaSource::setMediaSourcePlaylist);
+//    connect(m_device,&MediaDeviceInterface::mediaPlaylistUpdated,this,&MediaSource::setMediaSourcePlaylist);
 }
 
 void MediaSource::updateMediaSourcePlaylist()

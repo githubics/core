@@ -20,7 +20,8 @@
 #define MEDIADEVICEINTERFACE
 
 #include <QObject>
-#include <QJsonObject>
+//#include <QJsonObject>
+#include <QVariantMap>
 
 // forward declare Qt classes
 QT_BEGIN_NAMESPACE
@@ -33,26 +34,41 @@ QT_END_NAMESPACE
 class MediaDeviceInterface : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit MediaDeviceInterface(QObject * parent = 0) : QObject(parent) {}
+    /** The structure of the playlist that we are working on.
+     *  The correspnding object is not owned by the device interface
+     *  but by the MediaSource. A pointer to the playlist is handed
+     *  to the Device which then updates the content.
+     **/
+    struct Playlist {
+        const QString deviceUrl;
+        QList<QVariantMap> audioFiles;
+        QList<QVariantMap> videoFiles;
+    };
+
+    explicit MediaDeviceInterface(QObject * parent = 0)
+        : QObject(parent)
+        {}
     virtual ~MediaDeviceInterface() {}
 
     /** Asynchronous call to update the media playlist.
      *  When a list is available the signal mediaPlaylistUpdated()
      *  is emitted
      */
-    virtual void updateMediaPlaylist(const QUrl & url) = 0;
+    virtual void updateMediaPlaylist(const QUrl & url) = 0; // to be replaced
+    virtual void updateMediaPlaylist(Playlist * playlist) = 0;
 
     /** Synchronous call returns an updated source list */
-    virtual const QJsonObject getMediaPlaylist(const QUrl & url) const = 0;
-
-public slots:
+    virtual const QJsonObject getMediaPlaylist(const QUrl & url) const = 0; // to be replaced
+    virtual const QJsonObject getMediaPlaylist(Playlist * playlist) const = 0;
 
 signals:
     /** The signal is emitted when the FileSystemDevice has an updated
-     *  MediaPlaylist. The argument is a reference to the new playlist
+     *  MediaPlaylist.
      **/
-    void mediaPlaylistUpdated(const QJsonObject & playList);
+    void mediaPlaylistUpdated(const QJsonObject & playList); //to be replaced
+    void mediaPlaylistUpdated();
 };
 
 #endif // MEDIADEVICEINTERFACE

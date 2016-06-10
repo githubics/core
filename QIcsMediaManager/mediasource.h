@@ -19,10 +19,10 @@
 #ifndef MEDIASOURCE_H
 #define MEDIASOURCE_H
 
+#include "mediadeviceinterface.h"
 #include <QObject>
 #include <QUrl>
 #include <QJsonObject>
-class MediaDeviceInterface;
 /*!
  * \brief MediaSource
  * This class caches source lists from devices.
@@ -38,6 +38,7 @@ class MediaSource : public QObject
     Q_PROPERTY(QUrl deviceUrl READ deviceUrl WRITE setDeviceUrl NOTIFY deviceUrlChanged)
 
 public:
+    typedef MediaDeviceInterface::Playlist Playlist;
     /** Creates a MediaSource from a device, a Url and a parent.
      *  The MediaSource will become the parent of the device.
      **/
@@ -67,6 +68,9 @@ public:
 //    QJsonObject getMediaSourceListFromFile( QString fileName );
 
 
+    const Playlist & playlist() const {return m_playlist;}
+
+
 signals:
     /** The MediaSource notifies the MediaManager that the playlist has changed
      *  with this signal. The payload is a pointer to the MediaSource instance and
@@ -85,8 +89,7 @@ private slots:
     void setMediaSourcePlaylist(const QJsonObject & mediaSourcePlaylist);
 
 private:
-    /** THE PLAYLIST */
-//    QJsonObject playList;
+    Playlist m_playlist;
 
     MediaDeviceInterface * m_device;
     QJsonObject m_mediaSourcePlaylist;
