@@ -17,7 +17,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 #if ! defined QT_NO_DEBUG_OUTPUT
-#define QT_NO_DEBUG_OUTPUT
+//#define QT_NO_DEBUG_OUTPUT
 #endif
 #include <QDebug>
 #include <QDir>
@@ -34,11 +34,21 @@ void IndexingWorker::startIndexing(const QUrl url)
 {
     m_audioFiles = QJsonArray();
     m_videoFiles = QJsonArray();
-    indexDirectory(url.toLocalFile());
     buildDirectoryTree(url.toLocalFile());
+    printDirectoryTree();
+    indexDirectoryTree();
     emit indexingFinished();
 }
 
+void IndexingWorker::printDirectoryTree()
+{
+    qDebug() << Q_FUNC_INFO ;
+    QHash<QString, QDateTime>::const_iterator i = m_dirTree.constBegin();
+    while (i != m_dirTree.constEnd()) {
+        qDebug() << i.key() << ": " << i.value();
+        ++i;
+    }
+}
 
 void IndexingWorker::mediaInfo(const QStringList fileList)
 {
@@ -70,25 +80,25 @@ void IndexingWorker::mediaInfo(const QStringList fileList)
     foreach (QString file, fileList) {
         nfiles=MI.Open(file.toStdWString(), MediaInfoLib::FileOption_NoRecursive);
     }
-    qDebug() << Q_FUNC_INFO << "Opened" << nfiles << "files";
+//    qDebug() << Q_FUNC_INFO << "Opened" << nfiles << "files";
     if (nfiles!=fileList.count()) {
         qWarning() << Q_FUNC_INFO << "some files could not be opened, have" << nfiles << "out of" << fileList.count();
     }
 
-    qDebug() << Q_FUNC_INFO << generalInform;
+//    qDebug() << Q_FUNC_INFO << generalInform;
     MI.Option(QStringLiteral("Inform").toStdWString(), generalInform.toStdWString());
     QString informOptionExample=QString::fromStdWString(MI.Inform());
-    qDebug() << Q_FUNC_INFO << qPrintable("\r\n\r\nGeneral Inform\r\n") << qPrintable(informOptionExample);
+//    qDebug() << Q_FUNC_INFO << qPrintable("\r\n\r\nGeneral Inform\r\n") << qPrintable(informOptionExample);
 
     QStringList informResult=informOptionExample.split('\n',QString::SkipEmptyParts);
     QVariantMap resMap;
     foreach (QString res, informResult) {
-        qDebug() << Q_FUNC_INFO << res;
+//        qDebug() << Q_FUNC_INFO << res;
         QStringList resList=res.split("|");
-        qDebug() << resList.count() << generalParams.count();
+//        qDebug() << resList.count() << generalParams.count();
         Q_ASSERT((resList.count()-1)==generalParams.count());
         for (int i=0;i<resList.count()-1;++i) {
-            qDebug() << generalParams[i] << ":" << resList[i];
+//            qDebug() << generalParams[i] << ":" << resList[i];
             resMap[generalParams[i]] = resList[i];
         }
         QJsonObject resObject=QJsonObject::fromVariantMap(resMap);
@@ -98,7 +108,7 @@ void IndexingWorker::mediaInfo(const QStringList fileList)
         else {
             qWarning() << Q_FUNC_INFO << "mimetype for file" << resMap["CompleteName"]<< "not one of audio or video but" << resMap["InternetMediaType"];
         }
-        qDebug() << Q_FUNC_INFO << "resObject" << resObject;
+//        qDebug() << Q_FUNC_INFO << "resObject" << resObject;
     }
 }
 
@@ -140,19 +150,17 @@ void IndexingWorker::indexDirectory(const QString dirPath)
 }
 
 
-void IndexingWorker::buildDirectoryTree( const QString dirPath )
+void IndexingWorker::buildDirectoryTree( const QString & dirPath)
 {
     QDir dir(dirPath);
     qDebug() << Q_FUNC_INFO << dir << dirPath;
 
-    // FIXME: this should be configurable and is different on Linux and Mac
+    // TODO: this should be configurable
     if (dirPath.count("/")>31) return;
 
-    //
-    QFileInfo* pDirInfo = new QFileInfo( dirPath );
-    QDateTime dirDateTime = pDirInfo->lastModified();
-
-    m_directoryDate.insert( dirPath, dirDateTime);
+    QFileInfo dirInfo(dirPath);
+    QDateTime dirDateTime = dirInfo.lastModified();
+    m_dirTree.insert(dirPath, dirDateTime);
 
     dir.setFilter(QDir::Dirs|QDir::NoDotAndDotDot);
     QStringList dirList=dir.entryList();
@@ -160,101 +168,35 @@ void IndexingWorker::buildDirectoryTree( const QString dirPath )
     foreach ( QString curDir, dirList )
     {
         QString dirFullPath = dirPath + QDir::separator() + curDir;
-
-        pDirInfo = new QFileInfo( dirFullPath );
-        dirDateTime = pDirInfo->lastModified();
-
-        m_directoryDate.insert( dirFullPath, dirDateTime);
-
         buildDirectoryTree( dirFullPath );
     }
 }
 
-/*
-void IndexingWorker::indexDirectoryWithTime(const QString dirPath)
+void IndexingWorker::indexDirectoryTree()
 {
+    QHash<QString, QDateTime>::const_iterator id = m_dirTree.constBegin();
 
-    // FIXME: this should be configurable and is different on Linux and Mac
-    if ( dirPath.count("/") > m_directory_scan_depth )
-        return;
+    while (id != m_dirTree.constEnd()) {
+        qDebug() << id.key() << ": " << id.value();
+        const QString & dirPath=id.key();
+        QDir dir(dirPath);
+        qDebug() << Q_FUNC_INFO << dir << dirPath;
 
-    QDir dir(dirPath);
-    qDebug() << Q_FUNC_INFO << dir << dirPath;
+        QStringList mediaInfoList;
+        dir.setFilter(QDir::Files);
+        dir.setNameFilters(audioFilters);
+        QStringList audioList=dir.entryList();
+        foreach (const QString & a, audioList)
+            mediaInfoList.append(dirPath+"/"+a);
 
-    dir.setFilter(QDir::Dirs|QDir::NoDotAndDotDot);
-    QStringList dirList=dir.entryList();
-    bool old_map_file_exists = QFile( m_map_file_name ).exists();
+        dir.setNameFilters(videoFilters);
+        QStringList videoList=dir.entryList();
+        foreach (QString v, videoList)
+            mediaInfoList.append(dirPath+"/"+v);
 
+        mediaInfo(mediaInfoList);
 
-    foreach ( QString cur_dir, dirList )
-    {
-        QString full_path_cur_dir = dirPath + QString("/") + cur_dir;
-
-        // Map contains directory new path and access date
-        QMap< QString, QString> new_map_path_date;
-
-        QFileInfo* p_dir_info = new QFileInfo( dirPath + QString("/") + cur_dir );
-        QDateTime date_time_dir = p_dir_info->lastModified();
-        new_map_path_date.insert( dirPath + QString("/") + cur_dir, date_time_dir.toString() );
-
-
-        // Map contains directory old path and access date
-        QMap< QString, QString> old_map_path_date;
-
-        if( old_map_file_exists )
-        {
-            old_map_path_date = readMap( m_map_file_name );
-
-            // Compare dates/times in old and new map
-            QMapIterator<QString, QString> i( new_map_path_date );
-            while ( i.hasNext() )
-            {
-                i.next();
-                bool key_exist = old_map_path_date.contains( i.key() );
-
-                if( key_exist )
-                {
-                    QDateTime new_dt = QDateTime::fromString( i.value() );
-                    QDateTime old_dt = QDateTime::fromString( old_map_path_date.value( i.key() ) );
-
-                    if( old_dt < new_dt )
-                        m_dir_changed = true;
-                }
-                else
-                {
-                    old_map_path_date.insert( i.key(), i.value() );
-                    m_dir_changed = true;
-                }
-            }
-        }
-        else
-        {
-            m_dir_changed = true;
-        }
-
-        indexDirectoryWithTime( full_path_cur_dir );
-
-        if( m_dir_changed )
-        {
-            // Modifie existing file map
-            if( old_map_file_exists )
-            {
-                QMap<QString, QString> map_from_file = readMap( m_map_file_name );
-
-                QMapIterator<QString, QString> i( new_map_path_date );
-                while (i.hasNext())
-                {
-                    i.next();
-                    map_from_file.remove( i.key() );
-                    map_from_file.insert( i.key(), i.value() );
-                }
-
-                writeMap( map_from_file, m_map_file_name );
-            }
-            else // or write map file for very first time
-            {
-                writeMap( new_map_path_date, m_map_file_name );
-            }
-        }
-
- **/
+        qDebug() << Q_FUNC_INFO << "appended" <<audioList.count()<<"audio files and"<<videoList.count()<<"video files in"<<dir.absolutePath();
+        ++id;
+    }
+}
