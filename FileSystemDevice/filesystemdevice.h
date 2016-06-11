@@ -32,16 +32,14 @@ public:
     FileSystemDevice(QObject *parent = 0);
     ~FileSystemDevice();
 
-    /** Asynchronous call to update the media playlist.
+    /** Asynchronous methods to update the media playlist.
      *  When a list is available the signal mediaPlaylistUpdated()
-     *  is emitted
+     *  is emitted.
      */
-    void updateMediaPlaylist(const QUrl & url) Q_DECL_OVERRIDE;
-
-    /** Synchronous call returns an updated source list */
-    const QJsonObject getMediaPlaylist(const QUrl & url) const Q_DECL_OVERRIDE;
+    void updateMediaPlaylist(Playlist * playlist) Q_DECL_OVERRIDE;
 
 public slots:
+    /** Slot connected to the IndexingWorkers finished signal. */
     virtual void indexingFinished();
 
 signals:
@@ -51,11 +49,7 @@ signals:
      *  times except that the indexing will run over and over again which is likely not
      *  intended.
      **/
-    void startIndexing(const QUrl url) const;
-    /** The signal is emitted when the FileSystemDevice has an updated
-     *  MediaPlaylist. The argument is a reference to the new playlist
-     **/
-//    void mediaPlaylistUpdated(const QJsonObject playList);
+    void startIndexing(Playlist * playlist) const;
 
 private:
     QThread * thread;

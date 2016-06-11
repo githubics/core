@@ -20,7 +20,6 @@
 #define MEDIADEVICEINTERFACE
 
 #include <QObject>
-//#include <QJsonObject>
 #include <QVariantMap>
 
 // forward declare Qt classes
@@ -42,7 +41,7 @@ public:
      *  to the Device which then updates the content.
      **/
     struct Playlist {
-        const QString deviceUrl;
+        QString deviceUrl;
         QList<QVariantMap> audioFiles;
         QList<QVariantMap> videoFiles;
     };
@@ -56,18 +55,12 @@ public:
      *  When a list is available the signal mediaPlaylistUpdated()
      *  is emitted
      */
-    virtual void updateMediaPlaylist(const QUrl & url) = 0; // to be replaced
     virtual void updateMediaPlaylist(Playlist * playlist) = 0;
-
-    /** Synchronous call returns an updated source list */
-    virtual const QJsonObject getMediaPlaylist(const QUrl & url) const = 0; // to be replaced
-    virtual const QJsonObject getMediaPlaylist(Playlist * playlist) const = 0;
 
 signals:
     /** The signal is emitted when the FileSystemDevice has an updated
      *  MediaPlaylist.
      **/
-    void mediaPlaylistUpdated(const QJsonObject & playList); //to be replaced
     void mediaPlaylistUpdated();
 };
 

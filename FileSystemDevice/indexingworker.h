@@ -19,6 +19,7 @@
 #ifndef INDEXINGWORKER_H
 #define INDEXINGWORKER_H
 
+#include "../QIcsMediaManager/mediadeviceinterface.h"
 #include <QObject>
 #include <QJsonArray>
 #include <QStringList>
@@ -41,31 +42,24 @@ public:
     }
     ~IndexingWorker(){}
 
-    QJsonArray audioFiles() const {return m_audioFiles;}
-    QJsonArray videoFiles() const {return m_videoFiles;}
-
 public slots:
-    void startIndexing(const QUrl url);
+    void startIndexing(MediaDeviceInterface::Playlist * playlist);
 
 signals:
     void indexingFinished() const;
     void indexingAborted() const;
 
 private:
-    void indexDirectory(const QString dirPath);
     void buildDirectoryTree(const QString & dirPath);
     void printDirectoryTree();
-    void indexDirectoryTree();
-    void mediaInfo(const QStringList fileList);
+    void indexDirectoryTree(MediaDeviceInterface::Playlist * playlist);
+    void mediaInfo(const QStringList fileList, MediaDeviceInterface::Playlist * playlist);
 
 private:
-    QJsonArray m_audioFiles;
-    QJsonArray m_videoFiles;
     QStringList audioFilters;
     QStringList videoFilters;
 
     QHash<QString, QDateTime> m_dirTree;
-
 };
 
 

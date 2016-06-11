@@ -1,8 +1,12 @@
 TEMPLATE = subdirs
 SUBDIRS += QIcsMediaManager \
-QIcsMediaPlayer \
 SimpleUiController \
-QIcsAudioVideoPlayer \
 SimpleDeviceManager \
 FileSystemDevice
 
+# not building the Qt based players for Genivi platforms
+!linux-oe-g++ {
+    SUBDIRS += \
+    QIcsAudioVideoPlayer \
+    QIcsMediaPlayer \
+}

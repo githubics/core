@@ -21,7 +21,6 @@
 #endif
 #include <QDebug>
 #include <QDir>
-#include <QJsonObject>
 
 #include "indexingworker.h"
 
@@ -30,27 +29,28 @@
 #define QSLWSTR( _ARG_ ) QStringLiteral( _ARG_ ).toStdWString()
 #endif
 
-void IndexingWorker::startIndexing(const QUrl url)
+void IndexingWorker::startIndexing(MediaDeviceInterface::Playlist * playlist)
 {
-    m_audioFiles = QJsonArray();
-    m_videoFiles = QJsonArray();
-    buildDirectoryTree(url.toLocalFile());
+    Q_ASSERT(playlist!=0);
+    playlist->audioFiles.clear();
+    playlist->videoFiles.clear();
+    buildDirectoryTree(playlist->deviceUrl);
     printDirectoryTree();
-    indexDirectoryTree();
+    indexDirectoryTree(playlist);
     emit indexingFinished();
 }
 
 void IndexingWorker::printDirectoryTree()
 {
     qDebug() << Q_FUNC_INFO ;
-    QHash<QString, QDateTime>::const_iterator i = m_dirTree.constBegin();
-    while (i != m_dirTree.constEnd()) {
+    for (QHash<QString, QDateTime>::const_iterator i=m_dirTree.constBegin();
+         i!=m_dirTree.constEnd();
+         ++i) {
         qDebug() << i.key() << ": " << i.value();
-        ++i;
     }
 }
 
-void IndexingWorker::mediaInfo(const QStringList fileList)
+void IndexingWorker::mediaInfo(const QStringList fileList, MediaDeviceInterface::Playlist * playlist)
 {
     if (fileList.isEmpty()) return;
     QStringList generalParams;
@@ -101,10 +101,9 @@ void IndexingWorker::mediaInfo(const QStringList fileList)
 //            qDebug() << generalParams[i] << ":" << resList[i];
             resMap[generalParams[i]] = resList[i];
         }
-        QJsonObject resObject=QJsonObject::fromVariantMap(resMap);
         QString mimeType=resMap["InternetMediaType"].toString();
-        if (mimeType.startsWith("audio")) m_audioFiles.append(resObject);
-        else if (mimeType.startsWith("video")) m_videoFiles.append(resObject);
+        if (mimeType.startsWith("audio")) playlist->audioFiles.append(resMap);
+        else if (mimeType.startsWith("video")) playlist->videoFiles.append(resMap);
         else {
             qWarning() << Q_FUNC_INFO << "mimetype for file" << resMap["CompleteName"]<< "not one of audio or video but" << resMap["InternetMediaType"];
         }
@@ -112,42 +111,6 @@ void IndexingWorker::mediaInfo(const QStringList fileList)
     }
 }
 
-
-void IndexingWorker::indexDirectory(const QString dirPath)
-{
-    QDir dir(dirPath);
-    qDebug() << Q_FUNC_INFO << dir << dirPath;
-
-    // FIXME: this should be configurable and is different on Linux and Mac
-    if (dirPath.count("/")>31) return;
-    QStringList mediaInfoList;
-
-    dir.setFilter(QDir::Dirs|QDir::NoDotAndDotDot);
-    QStringList dirList=dir.entryList();
-
-    dir.setFilter(QDir::Files);
-    dir.setNameFilters(audioFilters);
-    QStringList audioList=dir.entryList();
-    foreach (QString a, audioList)
-        mediaInfoList.append(dirPath+"/"+a);
-
-    dir.setNameFilters(videoFilters);
-    QStringList videoList=dir.entryList();
-    foreach (QString v, videoList)
-        mediaInfoList.append(dirPath+"/"+v);
-
-    mediaInfo(mediaInfoList);
-
-    qDebug() << Q_FUNC_INFO << "appended" <<audioList.count()<<"audio files and"<<videoList.count()<<"video files in"<<dir.absolutePath();
-    qDebug() << Q_FUNC_INFO << "moving on to" <<dirList;
-
-    foreach (QString dirName, dirList) {
-        // FIXME: take this out and make directory filters configurable
-//        if (!dirName.startsWith("rolands"))
-            indexDirectory(dirPath+"/"+dirName);
-
-    }
-}
 
 
 void IndexingWorker::buildDirectoryTree( const QString & dirPath)
@@ -172,7 +135,7 @@ void IndexingWorker::buildDirectoryTree( const QString & dirPath)
     }
 }
 
-void IndexingWorker::indexDirectoryTree()
+void IndexingWorker::indexDirectoryTree(MediaDeviceInterface::Playlist * playlist)
 {
     QHash<QString, QDateTime>::const_iterator id = m_dirTree.constBegin();
 
@@ -194,7 +157,7 @@ void IndexingWorker::indexDirectoryTree()
         foreach (QString v, videoList)
             mediaInfoList.append(dirPath+"/"+v);
 
-        mediaInfo(mediaInfoList);
+        mediaInfo(mediaInfoList,playlist);
 
         qDebug() << Q_FUNC_INFO << "appended" <<audioList.count()<<"audio files and"<<videoList.count()<<"video files in"<<dir.absolutePath();
         ++id;

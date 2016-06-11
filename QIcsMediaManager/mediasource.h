@@ -20,8 +20,8 @@
 #define MEDIASOURCE_H
 
 #include "mediadeviceinterface.h"
+#include "mediamanagertypes.h"
 #include <QObject>
-#include <QUrl>
 #include <QJsonObject>
 /*!
  * \brief MediaSource
@@ -34,8 +34,6 @@
 class MediaSource : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QJsonObject mediaSourcePlaylist READ mediaSourcePlaylist  WRITE setMediaSourcePlaylist  NOTIFY mediaSourcePlaylistChanged)
-    Q_PROPERTY(QUrl deviceUrl READ deviceUrl WRITE setDeviceUrl NOTIFY deviceUrlChanged)
 
 public:
     typedef MediaDeviceInterface::Playlist Playlist;
@@ -44,22 +42,24 @@ public:
      **/
     explicit MediaSource(MediaDeviceInterface * device, const QUrl & deviceUrl, QObject * parent = 0 );
 
+    /** This function will cause an update of the playlist.
+     *  The MediaSource will emit a signal to the MediaDevice which then asynchronously
+     *  will re-create the playlist. There is no guarantee that the MediaDevice will
+     *  completely re-index all media. If the MediaDevice implements caching then this call
+     *  can be very fast.
+     **/
     void updateMediaSourcePlaylist() ;
-    QJsonObject mediaSourcePlaylist() const;
 
     /** Check whether the MediaType is present in the MediaSourcePlaylist */
-    bool hasMediaType(const QString & mediaTypeStr) const;
+    bool hasMediaType(const mmTypes::MediaType & mediaType) const;
 
     /** Returns a QJsonArray for the given MediaType.
      *  The returned QJsonArray will be empty if the MediaType was not present
      **/
-    const QJsonArray mediaArray(const QString & mediaTypeStr) const;
+    const QJsonArray mediaArray(const mmTypes::MediaType & mediaType) const;
 
     /** Returns the deviceUrl that is associated with this MediaSource as a string */
     const QString deviceUrlString() const;
-
-    /** Returns the deviceUrl as QUrl */
-    const QUrl deviceUrl() const;
 
 //    /** Saves mediaObject to the file fileName, return true on success, false -- otherwise**/
 //    bool saveJsonObjectToFile( QString fileName, QJsonObject mediaObject );
@@ -78,22 +78,17 @@ signals:
      **/
     void mediaSourcePlaylistChanged(const MediaSource * mediaSource) const;
 
-    void deviceUrlChanged(QUrl deviceUrl);
-
 private slots:
-    void setDeviceUrl(QUrl deviceUrl);
     /** MediaDevice emits a signal when a playlist has been updated that is connected
      *  to this slot and that sets the new playlist. MediaSource emits the mediaSourcePlaylistChanged
      *  signal when this function exits.
      **/
-    void setMediaSourcePlaylist(const QJsonObject & mediaSourcePlaylist);
+    void setMediaSourcePlaylist();
 
 private:
     Playlist m_playlist;
 
     MediaDeviceInterface * m_device;
-    QJsonObject m_mediaSourcePlaylist;
-    QUrl m_deviceUrl;
 };
 
 #endif // MEDIASOURCE_H

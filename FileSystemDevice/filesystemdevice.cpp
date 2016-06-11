@@ -54,15 +54,15 @@ FileSystemDevice::~FileSystemDevice()
     }
 }
 
-void FileSystemDevice::updateMediaPlaylist(const QUrl & url)
+void FileSystemDevice::updateMediaPlaylist(Playlist * playlist)
 {
-    qDebug() << Q_FUNC_INFO << url << "busy=" << busy;
+    qDebug() << Q_FUNC_INFO << playlist << "busy=" << busy;
     if (!busy) { // only one indexing job at a time
         busy=true;
 #if ! defined QT_NO_DEBUG_OUTPUT
         stopWatch.start();
 #endif
-        emit startIndexing(url);
+        emit startIndexing(playlist);
     }
 }
 
@@ -70,35 +70,14 @@ void FileSystemDevice::indexingFinished()
 {
     busy=false;
     qDebug() << Q_FUNC_INFO << "busy=" << busy;
-    QJsonObject mediaObject;
-    // FIXME: the url is not known here currently -
-    // we likely want this to become the identifier for the device though
-    mediaObject.insert("DeviceUrl","DeviceUrl"/*url.url()*/);
-    mediaObject.insert("AudioFile",worker->audioFiles());
-    mediaObject.insert("VideoFile",worker->videoFiles());
 #if ! defined QT_NO_DEBUG_OUTPUT
-    qDebug() << Q_FUNC_INFO << "indexed"
-             << worker->audioFiles().count() << "audiofiles"
-             << worker->videoFiles().count() << "videofiles"
+    qDebug() << Q_FUNC_INFO << "indexing"
+//             << worker->audioFiles().count() << "audiofiles"
+//             << worker->videoFiles().count() << "videofiles"
              << "finished in" << stopWatch.elapsed()/1000.f;
 #endif
-    emit mediaPlaylistUpdated(mediaObject);
+    emit mediaPlaylistUpdated();
 }
-
-const QJsonObject FileSystemDevice::getMediaPlaylist(const QUrl & url) const
-{
-    // NOTE: this makes a call across threads. It will block both threads.
-    worker->startIndexing(url);
-
-    // TODO: Define this object somewhere and just fill it here with
-    // data.
-    QJsonObject mediaObject;
-    mediaObject.insert("DeviceUrl",url.url()); // this is likely obsolete
-    mediaObject.insert("AudioFile",worker->audioFiles());
-    mediaObject.insert("VideoFile",worker->videoFiles());
-    return mediaObject;
-}
-
 
 #if 0
 bool FileSystemDevice::saveJsonObjectToFile( QString fileName, QJsonObject mediaObject )
