@@ -66,6 +66,8 @@ MediaManager::MediaManager(QObject *parent)
     // This is a hardcoded list of media player plugins and minimum required version numbers
     knownMediaPlayerPlugins["QIcsMediaPlayer:100"] = mmTypes::AudioFile;
     knownMediaPlayerPlugins["QIcsAudioVideoPlayer:120"] = mmTypes::VideoFile;
+    knownMediaPlayerPlugins["Mpg123Player:100"] = mmTypes::AudioFile;
+
 
     // Hardcoded list of controller plugins.
     knownControllerPlugins["SimpleTcpController:100"] = "ReadWriteContollerType";
@@ -203,30 +205,29 @@ void MediaManager::removeMediaSource(const QString typeStr, const QUrl deviceUrl
     for (int mt=mmTypes::NoType+1;mt<mmTypes::EndType;++mt)
     {
         MediaType mediaType=(const MediaType)mt;
-        QString mediaTypeStr=mmTypes::Media(mediaType);
-        if (!ms->hasMediaType(mediaTypeStr)) continue;
+        if (!ms->hasMediaType(mediaType)) continue;
         if (mediaSessions.contains(mediaType)) {
             mediaSessions[mediaType]->removeMediaSourcePlaylist(deviceUrlStr);          
         }
     }
+    stop();
     emit activeMediaSessionPlaylist(mediaSessions[activeMediaSessionType]->mediaSessionPlaylist());
     ms->deleteLater();
 }
 
 void MediaManager::updateMediaSession(const MediaSource * mediaSource)
 {
-//    qDebug() << Q_FUNC_INFO << mediaSource;
+    qDebug() << Q_FUNC_INFO << mediaSource;
     const QString deviceUrlStr=mediaSource->deviceUrlString();
 
     for (int mt=mmTypes::NoType+1;mt<mmTypes::EndType;++mt)
     {
         MediaType mediaType=(const MediaType)mt;
-        QString mediaTypeStr=mmTypes::Media(mediaType);
-        qDebug() << Q_FUNC_INFO << "looking for JSonArray for MediaType" << mediaTypeStr << "DeviceUrl" << deviceUrlStr;
+        qDebug() << Q_FUNC_INFO << "looking for JSonArray for MediaType" << mediaType << "DeviceUrl" << deviceUrlStr;
 
-        const QJsonArray playListArray=mediaSource->mediaArray(mediaTypeStr);
+        const QJsonArray & playListArray=mediaSource->mediaArray(mediaType);
         if (playListArray.isEmpty()) {
-            qDebug() << Q_FUNC_INFO << "no media of type" << mediaTypeStr << "found in" << deviceUrlStr;
+            qDebug() << Q_FUNC_INFO << "no media of type" << mediaType << "found in" << deviceUrlStr;
             continue;
         }
 

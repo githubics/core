@@ -1,13 +1,12 @@
 TEMPLATE = subdirs
 SUBDIRS += QIcsMediaManager \
-QIcsMediaPlayer \
 SimpleUiController \
-QIcsAudioVideoPlayer \
 SimpleDeviceManager \
 FileSystemDevice
 
-CONFIG(qjsonrpc) {
+# not building the Qt based players for Genivi platforms
+!linux-oe-g++ {
     SUBDIRS += \
-    QJsonRpcTcpController
+    QIcsAudioVideoPlayer \
+    QIcsMediaPlayer \
 }
-

@@ -10,6 +10,7 @@
         <file>PlaylistView.qml</file>
         <file>VideoElement.qml</file>
         <file>Assets/tv.png</file>
+        <file>Assets/ICSDefaultCoverArt.png</file>
     </qresource>
     <qresource prefix="/Buttons">
         <file alias="button.png">Assets/Buttons/button.png</file>

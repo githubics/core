@@ -16,69 +16,64 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
+#if ! defined QT_NO_DEBUG_OUTPUT
+#define QT_NO_DEBUG_OUTPUT
+#endif
+#include <QDebug>
+
 #include "mediasource.h"
-#include "mediadeviceinterface.h"
 
 #include <QJsonArray>
+#include <QUrl>
 
 MediaSource::MediaSource(MediaDeviceInterface * device, const QUrl & deviceUrl, QObject * parent)
     : QObject(parent)
     , m_device(device)
-    , m_deviceUrl(deviceUrl)
 {
     m_device->setParent(this);
-    connect(m_device,&MediaDeviceInterface::mediaSourceListUpdate,this,&MediaSource::setMediaSourcePlaylist);
+    m_playlist.deviceUrl=deviceUrl.toLocalFile();
+    connect(m_device,&MediaDeviceInterface::mediaPlaylistUpdated,this,&MediaSource::setMediaSourcePlaylist);
 }
 
 void MediaSource::updateMediaSourcePlaylist()
 {
-    m_device->updateMediaSourceList(m_deviceUrl);
+    m_device->updateMediaPlaylist(&m_playlist);
 }
 
-QJsonObject MediaSource::mediaSourcePlaylist() const
+void MediaSource::setMediaSourcePlaylist()
 {
-    return m_mediaSourcePlaylist;
-}
-
-void MediaSource::setMediaSourcePlaylist(QJsonObject mediaSourcePlaylist)
-{
-    if (m_mediaSourcePlaylist == mediaSourcePlaylist)
-        return;
-
-    m_mediaSourcePlaylist = mediaSourcePlaylist;
+    qDebug() << Q_FUNC_INFO;
     emit mediaSourcePlaylistChanged(this);
 }
 
-bool MediaSource::hasMediaType(const QString & mediaTypeStr) const
+bool MediaSource::hasMediaType(const mmTypes::MediaType & mediaType) const
 {
-    if (m_mediaSourcePlaylist.contains(mediaTypeStr) && !m_mediaSourcePlaylist[mediaTypeStr].toArray().isEmpty())
-        return true;
+    if ((mediaType==mmTypes::AudioFile) && (!m_playlist.audioFiles.isEmpty())) return true;
+    if ((mediaType==mmTypes::VideoFile) && (!m_playlist.videoFiles.isEmpty())) return true;
     return false;
 }
 
-const QJsonArray MediaSource::mediaArray(const QString &mediaTypeStr) const
+const QJsonArray MediaSource::mediaArray(const mmTypes::MediaType &mediaType) const
 {
-    if (m_mediaSourcePlaylist.contains(mediaTypeStr))
-        return m_mediaSourcePlaylist[mediaTypeStr].toArray();
-    else
-        return QJsonArray();
+    // TODO: We are still creating a copy of the data here as we are creating
+    // JSonObjects from VariantMaps. Because the data is stored in QStrings
+    // this still does not matter too much.
+    // Once we refine the implementation of the Playlist this can probably be
+    // further simplified.
+    QJsonArray mediaPlaylist;
+    const QList<QVariantMap> * mediaFiles=0;
+    if (mediaType==mmTypes::AudioFile) mediaFiles=&m_playlist.audioFiles;
+    else if (mediaType==mmTypes::VideoFile) mediaFiles=&m_playlist.videoFiles;
+    // TODO: Add code for additional MediaTypes here
+    if (mediaFiles) {
+        foreach (const QVariantMap & file, *mediaFiles) {
+            mediaPlaylist.append(QJsonObject::fromVariantMap(file));
+        }
+    }
+    return mediaPlaylist;
 }
 
 const QString MediaSource::deviceUrlString() const
 {
-    return m_deviceUrl.toString();
-}
-
-const QUrl MediaSource::deviceUrl() const
-{
-    return m_deviceUrl;
-}
-
-void MediaSource::setDeviceUrl(QUrl deviceUrl)
-{
-    if (m_deviceUrl == deviceUrl)
-        return;
-
-    m_deviceUrl = deviceUrl;
-    emit deviceUrlChanged(deviceUrl);
+    return m_playlist.deviceUrl;
 }

@@ -20,7 +20,9 @@
 #define FILESYSTEMDEVICE_H
 
 #include "../QIcsMediaManager/mediadeviceinterface.h"
-
+#include <QUrl>
+class QThread;
+class IndexingWorker;
 
 class FileSystemDevice : public MediaDeviceInterface
 {
@@ -28,15 +30,31 @@ class FileSystemDevice : public MediaDeviceInterface
 
 public:
     FileSystemDevice(QObject *parent = 0);
+    ~FileSystemDevice();
 
-    /** Possibly Asynchronous call to update the media source list.
-     *  When a list is available the signal mediaSourceListUpdate(QStringList)
-     *  is emitted
+    /** Asynchronous methods to update the media playlist.
+     *  When a list is available the signal mediaPlaylistUpdated()
+     *  is emitted.
      */
-    virtual void updateMediaSourceList(const QUrl url) const ;
+    void updateMediaPlaylist(Playlist * playlist) Q_DECL_OVERRIDE;
 
-    /** Synchronous call the will return with an updated source list */
-    virtual QJsonObject getMediaSourceList(const QUrl url) const ;
+public slots:
+    /** Slot connected to the IndexingWorkers finished signal. */
+    virtual void indexingFinished();
+
+signals:
+    /** This signal is emitted from the FileSystemDevice to cause the IndexingWorker
+     *  to index the url. An indexer can only run once but because the indexing itself
+     *  blocks the threads execution loop there is no issues with calling this multiple
+     *  times except that the indexing will run over and over again which is likely not
+     *  intended.
+     **/
+    void startIndexing(Playlist * playlist) const;
+
+private:
+    QThread * thread;
+    IndexingWorker * worker;
+    bool busy;
 
 };
 

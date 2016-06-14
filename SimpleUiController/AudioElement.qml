@@ -29,6 +29,17 @@ Item {
             right: playListRect.left
             rightMargin: 5
         }
+        color: "black"
+        Image{
+            id: defaultCoverImage
+            anchors.fill: parent
+            fillMode: Image.PreserveAspectFit
+            visible: !coverImage.visible
+            source: "qrc:/simpleuicontroller/Assets/ICSDefaultCoverArt.png"
+
+
+        }
+
         Image{
             id: coverImage
             anchors.fill: parent

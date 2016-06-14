@@ -43,20 +43,6 @@ const QSet<QString> QIcsMediaPlayer::supportedFileSuffixes() const
     return suffixes;
 }
 
-QQmlEngine * QIcsMediaPlayer::engine() const
-{
-    return m_engine;
-}
-
-QUrl QIcsMediaPlayer::qml() const
-{
-    return QUrl(QStringLiteral("file:///home/ics/core/QIcsAudioVideoPlayer/main.qml"));
-}
-
-QString QIcsMediaPlayer::currentMedia() const
-{
-    return m_audioVideoPlayerController->track();
-}
 
 int QIcsMediaPlayer::currentTrackIndex() const
 {
@@ -66,7 +52,12 @@ int QIcsMediaPlayer::currentTrackIndex() const
 
 void QIcsMediaPlayer::play() const
 {
-    if (!m_playerView->isVisible()) m_playerView->show();
+    if (!m_playerView->isVisible()){
+
+        m_playerView->show();
+    } else {
+        m_playerView->raise();
+    }
     m_audioVideoPlayerController->playTrack();
     translatePlayState();
 }

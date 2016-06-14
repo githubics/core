@@ -29,10 +29,6 @@
 #include "../QIcsMediaManager/mediaplayerinterface.h"
 #include "mediaplayercontroller.h"
 
-#include <QMediaPlayer>
-#include <QMediaPlaylist>
-//class QMediaPlaylist;
-//class QMediaContent;
 
 /** TODO: This class may have to change names as it should actually
  *  not be a MediaPlayer itself but a Factory that creates MediaPlayer instances.
@@ -41,7 +37,7 @@
  *  acceptable but in a more sophisticated situation one might want multiple mp3 players
  *  running simultaneously and outputting independently to different sinks.
  **/
-class QIcsMediaPlayer : /*public QObject, */public MediaPlayerInterface
+class QIcsMediaPlayer : public MediaPlayerInterface
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.ics.media-manager.MediaPlayerInterface" FILE "QIcsAudioVideoPlayer.json")
@@ -52,25 +48,18 @@ public:
     void setMediaPlaylist(const QStringList playList);
     const QSet<QString> supportedFileSuffixes() const;
     PlayState playState() const {return m_playState;}
-
-    QQmlEngine * engine() const;
-    QUrl qml() const;
-    QString currentMedia() const;
     int currentTrackIndex() const;
+
+//    QQmlEngine * engine() const;
+//    QUrl qml() const;
+//    QString currentMedia() const;
 
 protected:
 
     QQuickWindow * m_window;
     QQuickView * m_playerView;
-    // TODO: probably want this to be a Q_PROPERTY
-//    QStringList m_mediaPlaylist;
 
-
-//  mutable QMediaPlayer::State m_currentPlayState;
-//    QMediaPlayer * m_mediaPlayer;
-//    QMediaPlaylist * m_mediaPlaylist;
     QStringList m_mediaPlaylist;
-//    quint16 m_currentSongIndex;
     QString m_currentlyPlaying;
     mutable PlayState m_playState;
     quint16 m_progress;

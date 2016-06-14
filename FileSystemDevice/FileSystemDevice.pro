@@ -16,12 +16,14 @@ DESTDIR = ../plugins
 
 SOURCES += \
     filesystemdevicefactory.cpp \
-    filesystemdevice.cpp
+    filesystemdevice.cpp \
+    indexingworker.cpp
 
 HEADERS += \
 ../QIcsMediaManager/mediadeviceinterface.h \
     filesystemdevicefactory.h \
-    filesystemdevice.h
+    filesystemdevice.h \
+    indexingworker.h
 
 DISTFILES += FileSystemDevice.json
 
@@ -44,7 +46,9 @@ CONFIG (mediainfo) {
     LIBS += $${MEDIA_INFO_LIBS} $${ZENLIB_LIBS}
 }
 
-#unix {
-#    target.path = /usr/lib
-#    INSTALLS += target
-#}
+linux-oe-g++ {
+    # Default rules for deployment.
+    include(deployment.pri)
+    target.path=/opt/QIcsMediaManager/plugins
+    INTALLS+=target
+}

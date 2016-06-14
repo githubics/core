@@ -48,19 +48,9 @@ SimpleDeviceManager::SimpleDeviceManager(QObject * parent)
     m_usbWatchPath = USBWATCHPATH;
     m_usbWatcher = new QFileSystemWatcher();
     m_usbWatcher->addPath(m_usbWatchPath);
-    connect(m_usbWatcher, &QFileSystemWatcher::directoryChanged, [=](){ QTimer::singleShot(1000, this, &SimpleDeviceManager::deviceChanged); } );
-//    QTimer::singleShot(2000,[=](){emit deviceCreated("USBDevice",QUrl::fromLocalFile("/Volumes/rkrause/mm2_test"));});
-//    QTimer::singleShot(4000,[=](){emit deviceCreated("USBDevice",QUrl::fromLocalFile("/media/sv-desktop-106/7DA2-BF26/Bohemian Rhapsody/"));});
-
-
+    connect(m_usbWatcher, &QFileSystemWatcher::directoryChanged, [=](){ QTimer::singleShot(2000, this, &SimpleDeviceManager::deviceChanged); } );
 #if defined SIMULATE_USB_DEVICE_PATH
     m_usbWatchPath = QString(SIMULATE_USB_DEVICE_PATH);
-// This does not work cause the path must not be changed
-// we would actually need to move the files somewhere else temporarily
-//    QTimer::singleShot(10000, this, [=]() {
-//        m_usbWatchPath = QString("/Users/rkrause/Downloads/test_mm1_empty/");
-//        emit deviceChanged();
-//    });
 #endif
     QTimer::singleShot(2000, this, &SimpleDeviceManager::deviceChanged);
 }
@@ -73,7 +63,6 @@ void SimpleDeviceManager::deviceChanged()
     if(!d.exists()) return;
     d.setFilter(QDir::Dirs|QDir::NoDotAndDotDot);
     QStringList entryList=d.entryList();
-
 
     //check whether a device was removed
     foreach (QString gonedir, m_devices) {

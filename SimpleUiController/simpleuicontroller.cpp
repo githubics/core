@@ -17,7 +17,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 #if ! defined QT_NO_DEBUG_OUTPUT
-//#define QT_NO_DEBUG_OUTPUT
+#define QT_NO_DEBUG_OUTPUT
 #endif
 #include <QDebug>
 
@@ -43,7 +43,7 @@ SimpleUiController::SimpleUiController()
     quickView->engine()->addImageProvider("coverArt", myAudioModel->currentCoverArt());
     quickView->setSource(QUrl(QStringLiteral("qrc:/simpleuicontroller/main.qml")));
 // FIXME: This needs to become a real configuration option for when we build for a Genivi Device
-//    quickView->setProperty("IVI-Surface-ID",3);
+    quickView->setProperty("IVI-Surface-ID",3);
 
     // All views opened should be set to FramelessWindowHint. Doing it in main is not a good idea because
     // some windows might not get created until later. We can create a MediaManager QuickView base class
@@ -52,6 +52,7 @@ SimpleUiController::SimpleUiController()
 
 // FIXME: For a quick demo on the ICS 3 screen setup
 //    quickView->setX(2480);quickView->setY(200);
+
     quickView->show();
 }
 
