@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include <QVariantMap>
+#include <QDateTime>
 
 // forward declare Qt classes
 QT_BEGIN_NAMESPACE
@@ -44,6 +45,7 @@ public:
         QString deviceUrl;
         QList<QVariantMap> audioFiles;
         QList<QVariantMap> videoFiles;
+        QHash<QString, QDateTime> dirTree;
     };
 
     explicit MediaDeviceInterface(QObject * parent = 0)
