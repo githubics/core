@@ -66,7 +66,7 @@ MediaManager::MediaManager(QObject *parent)
     // This is a hardcoded list of media player plugins and minimum required version numbers
     knownMediaPlayerPlugins["QIcsMediaPlayer:100"] = mmTypes::AudioFile;
     knownMediaPlayerPlugins["QIcsAudioVideoPlayer:120"] = mmTypes::VideoFile;
-    knownMediaPlayerPlugins["Mpg123Player:100"] = mmTypes::AudioFile;
+//    knownMediaPlayerPlugins["Mpg123Player:100"] = mmTypes::AudioFile;
 
 
     // Hardcoded list of controller plugins.
