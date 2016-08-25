@@ -18,10 +18,9 @@
 */
 #ifndef SIMPLEDEVICEMANAGER_H
 #define SIMPLEDEVICEMANAGER_H
-#include "qprocess.h"
+
 #include "../QIcsMediaManager/devicemanagerinterface.h"
 #include <QStringList>
-#include "qmap.h"
 class QFileSystemWatcher;
 
 /** SimpleDeviceManager is a Plugin Interface for a Device Manager
@@ -35,22 +34,13 @@ class SimpleDeviceManager : public DeviceManagerInterface
 public:
     SimpleDeviceManager(QObject *parent = 0);
 
-private slots:
-    void detectUsbDevices();
-    void handleProcessResponse();
-    void handleProcessError();
-    void handleProcessExited(int exitCode);
-
 protected slots:
     void deviceChanged();
-
 
 private:
     QFileSystemWatcher * m_usbWatcher;
     QString m_usbWatchPath;
     QStringList m_devices;
-    QProcess *m_process;
-    QMap<QString, QString> m_deviceList;
 };
 
 #endif // SIMPLEDEVICEMANAGER_H
