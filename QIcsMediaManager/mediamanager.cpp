@@ -181,10 +181,15 @@ void MediaManager::createMediaSource(const QString typeStr, const QUrl deviceUrl
         MediaDeviceFactory * msi=mediaDevicePlugins[type];
         Q_ASSERT(msi!=0);
         MediaDeviceInterface * mdi=msi->createMediaDevice(this);
-        MediaSource * ms=new MediaSource(mdi,deviceUrl, this);
-        connect (ms, &MediaSource::mediaSourcePlaylistChanged, this, &MediaManager::updateMediaSession);
+        MediaSource * ms=new MediaSource(this);
         mediaSources.insert(deviceUrl,ms);
-        ms->updateMediaSourcePlaylist();
+        ms->playlist()->deviceUrl=deviceUrl.toLocalFile();
+
+        // TODO: Should consolidate these two into one...
+        connect(mdi,&MediaDeviceInterface::mediaPlaylistUpdated,ms,&MediaSource::setMediaSourcePlaylist);
+        connect(ms, &MediaSource::mediaSourcePlaylistChanged, this, &MediaManager::updateMediaSession);
+
+        mdi->updateMediaPlaylist(ms->playlist());
     }
 }
 
