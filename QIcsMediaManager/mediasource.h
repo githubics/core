@@ -25,8 +25,8 @@
 #include <QJsonObject>
 /*!
  * \brief MediaSource
- * This class caches source lists from devices.
- * in JSonObjects that contain the DeviceUrl
+ * This class stores and caches Playlists from MediaDevices.
+ * in JSonObjects that contain the DeviceUrl,
  * a JsonArray with AudioFiles,
  * a JSonArray with VideoFiles
  *
@@ -37,18 +37,9 @@ class MediaSource : public QObject
 
 public:
     typedef MediaDeviceInterface::Playlist Playlist;
-    /** Creates a MediaSource from a device, a Url and a parent.
-     *  The MediaSource will become the parent of the device.
-     **/
-    explicit MediaSource(MediaDeviceInterface * device, const QUrl & deviceUrl, QObject * parent = 0 );
 
-    /** This function will cause an update of the playlist.
-     *  The MediaSource will emit a signal to the MediaDevice which then asynchronously
-     *  will re-create the playlist. There is no guarantee that the MediaDevice will
-     *  completely re-index all media. If the MediaDevice implements caching then this call
-     *  can be very fast.
-     **/
-    void updateMediaSourcePlaylist() ;
+    /** Creates a MediaSource. **/
+    explicit MediaSource(QObject * parent = 0 );
 
     /** Check whether the MediaType is present in the MediaSourcePlaylist */
     bool hasMediaType(const mmTypes::MediaType & mediaType) const;
@@ -67,8 +58,8 @@ public:
 //    /** Reads QJsonObject from the file fileName**/
 //    QJsonObject getMediaSourceListFromFile( QString fileName );
 
-
-    const Playlist & playlist() const {return m_playlist;}
+    /** Fast unchecked access to the Playlist pointer */
+    Playlist * playlist() {return &m_playlist;}
 
 
 signals:
@@ -78,7 +69,7 @@ signals:
      **/
     void mediaSourcePlaylistChanged(const MediaSource * mediaSource) const;
 
-private slots:
+public slots:
     /** MediaDevice emits a signal when a playlist has been updated that is connected
      *  to this slot and that sets the new playlist. MediaSource emits the mediaSourcePlaylistChanged
      *  signal when this function exits.
@@ -87,8 +78,6 @@ private slots:
 
 private:
     Playlist m_playlist;
-
-    MediaDeviceInterface * m_device;
 };
 
 #endif // MEDIASOURCE_H

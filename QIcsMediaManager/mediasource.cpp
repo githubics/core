@@ -26,18 +26,9 @@
 #include <QJsonArray>
 #include <QUrl>
 
-MediaSource::MediaSource(MediaDeviceInterface * device, const QUrl & deviceUrl, QObject * parent)
+MediaSource::MediaSource(QObject * parent)
     : QObject(parent)
-    , m_device(device)
 {
-    m_device->setParent(this);
-    m_playlist.deviceUrl=deviceUrl.toLocalFile();
-    connect(m_device,&MediaDeviceInterface::mediaPlaylistUpdated,this,&MediaSource::setMediaSourcePlaylist);
-}
-
-void MediaSource::updateMediaSourcePlaylist()
-{
-    m_device->updateMediaPlaylist(&m_playlist);
 }
 
 void MediaSource::setMediaSourcePlaylist()
