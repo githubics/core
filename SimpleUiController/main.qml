@@ -22,8 +22,18 @@ import Model 1.0
 Rectangle{
     id: root
     visible: true
-    width: 800
-    height: 480
+    anchors.fill: parent
+//    width: 800
+//    height: 480
+
+    onXChanged: {
+        console.log("X changed")
+    }
+    onYChanged: {
+
+        console.log("y changed")
+    }
+
 
     Image {
         id: backgroundImage
@@ -119,11 +129,22 @@ Rectangle{
                 anchors.fill: parent
                 visible: false
                 opacity: 0
+
                 Connections{
                     target: controller
                     onActiveMediaSessionChanged:{
                         if(!root.transitions.running && controller.activeMediaSession === "VideoFile"){
-                            var view = root.mapFromItem(videoSpace.vidRect)
+                            var view = root.mapFromItem(videoSpace.vidRect,videoSpace.vidRect.x,videoSpace.vidRect.y)
+                            // TODO: Would like to revisit this and see if it it the UI that should determine the size of the
+                            // player or whether the controller should have some more to say about this.
+                            // In a sense I'd like to keep the UI as shallow as possible and not making decisions like this
+                            // but then we would still need to figure out who would know the correct size for the video rectangle
+                            controller.setVideoRectangle( view.x, view.y, videoSpace.vidRect.height, videoSpace.vidRect.width)
+                        }
+                    }
+                    onRootChanged:{
+                        if(!root.transitions.running && controller.activeMediaSession === "VideoFile"){
+                            var view = root.mapFromItem(videoSpace.vidRect,videoSpace.vidRect.x,videoSpace.vidRect.y)
                             // TODO: Would like to revisit this and see if it it the UI that should determine the size of the
                             // player or whether the controller should have some more to say about this.
                             // In a sense I'd like to keep the UI as shallow as possible and not making decisions like this

@@ -28,7 +28,10 @@ QIcsMediaPlayer::QIcsMediaPlayer(QObject *parent)
     Q_INIT_RESOURCE(qml);
     m_playerView->engine()->rootContext()->setContextProperty("mediaPlayerController", m_audioVideoPlayerController);
     m_playerView->setSource(QUrl(QStringLiteral("qrc:/mediaplayer/main.qml")));
-    m_playerView->setFlags(Qt::FramelessWindowHint);
+    m_playerView->setFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
+//    m_playerView->setFlags(Qt::WindowStaysOnTopHint);
+    connect(m_audioVideoPlayerController, SIGNAL(trackIndexChanged(int)), this, SIGNAL(currentTrackIndexChanged(int)));
+//    connect(m_audioVideoPlayerController, SIGNAL(trackIndexChanged(int)), this, SIGNAL(setTrack(int)));
 }
 
 void QIcsMediaPlayer::setMediaPlaylist(const QStringList playList)
@@ -117,13 +120,18 @@ void QIcsMediaPlayer::decrementCurrentVolume()
 
 void QIcsMediaPlayer::setCurrentTrack(int index) const
 {
-    if(index < m_mediaPlaylist.count() &&m_audioVideoPlayerController->trackIndex() != index)
+//    if(index < m_mediaPlaylist.count() && m_audioVideoPlayerController->trackIndex() != index)
         m_audioVideoPlayerController->setTrackByIndex(index);
+        translatePlayState();
+
 }
 
 void QIcsMediaPlayer::setVideoRectangle(const QRect videoRect) const
 {
+    qDebug() << Q_FUNC_INFO;
+//    m_playerView->hide();
     m_playerView->setGeometry(videoRect);
+//    m_playerView->show();
 }
 
 void QIcsMediaPlayer::translatePlayState() const
@@ -139,4 +147,5 @@ void QIcsMediaPlayer::translatePlayState() const
         m_playState=mmTypes::Playing;
         break;
     }
+    emit playStateChanged(m_playState);
 }

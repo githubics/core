@@ -33,7 +33,7 @@ QIcsMediaPlayer::QIcsMediaPlayer(QObject *parent)
     m_mediaPlayer->setVolume(m_currentVolume);
     connect(m_mediaPlayer,&QMediaPlayer::stateChanged,this,&QIcsMediaPlayer::sendPlayState);
     m_currentlyPlaying = QMediaPlayer::StoppedState;
-    connect(m_mediaPlaylist,&QMediaPlaylist::currentIndexChanged,this,&MediaPlayerInterface::currentTrackIndexChanged);
+    connect(m_mediaPlaylist, &QMediaPlaylist::currentIndexChanged,this,&MediaPlayerInterface::currentTrackIndexChanged);
 }
 
 void QIcsMediaPlayer::setMediaPlaylist(const QStringList playList)

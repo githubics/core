@@ -42,6 +42,7 @@ class SimpleUiController : public MediaManagerControllerInterface
     Q_PROPERTY(QVariantList videoPlaylist READ videoPlaylist NOTIFY videoPlaylistChanged)
     Q_PROPERTY(QStringList mediaSessions READ mediaSessions WRITE setMediaSessions NOTIFY mediaSessionsChanged)
     Q_PROPERTY(mmTypes::PlayState playState READ playState WRITE setPlayState NOTIFY playStateChanged)
+    Q_PROPERTY(int root NOTIFY rootChanged)
 
 public:
 
@@ -89,6 +90,8 @@ signals:
     void videoPlaylistChanged();
     void currentTrackChanged();
     void playStateChanged();
+    //test
+    void rootChanged();
 
 
 private:
