@@ -17,7 +17,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 #if ! defined QT_NO_DEBUG_OUTPUT
-#define QT_NO_DEBUG_OUTPUT
+//#define QT_NO_DEBUG_OUTPUT
 #endif
 #include <QDebug>
 #include <QJsonDocument>
@@ -166,6 +166,7 @@ void MediaPlayerController::setPlaybackState(PlaybackState playbackState)
     }
     else {
         emit playbackStateChanged(m_playbackState);
+        qDebug() << Q_FUNC_INFO << "playbackStateChanged(" << m_playbackState << ");";
     }
 }
 
@@ -206,6 +207,7 @@ void MediaPlayerController::setAutoAdvance(bool autoAdvance)
 
 void MediaPlayerController::setTrackByIndex(const int idx)
 {
+    qDebug() << Q_FUNC_INFO << idx;
     const QStringList tracks = (m_mediaMode=="video")?m_videoTracks:m_audioTracks;
 
     if (((idx+1)>0)&&(idx<tracks.count())) {
