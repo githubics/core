@@ -23,8 +23,6 @@ Rectangle{
     visible: true
     anchors.fill: parent
     color: "transparent"
-
-
     Media{
         id:videoPlayer
     }

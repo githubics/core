@@ -17,7 +17,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 #if ! defined QT_NO_DEBUG_OUTPUT
-//#define QT_NO_DEBUG_OUTPUT
+#define QT_NO_DEBUG_OUTPUT
 #endif
 #include <QDebug>
 #include <QJsonDocument>
@@ -32,7 +32,6 @@ MediaPlayerController::MediaPlayerController(QObject *parent)
     , m_trackIndex(-1)
     , m_mediaMode("video")
 {
-    qDebug() << "AudioVideoPlayer loaded:";
 }
 
 QString MediaPlayerController::track() const
@@ -114,8 +113,6 @@ void MediaPlayerController::setMediaMode(QString mediaMode)
     m_mediaMode = mediaMode;
     emit mediaModeChanged(mediaMode);
 }
-
-
 
 void MediaPlayerController::setTrackTitle(QString trackTitle)
 {
@@ -209,7 +206,6 @@ void MediaPlayerController::setAutoAdvance(bool autoAdvance)
 
 void MediaPlayerController::setTrackByIndex(const int idx)
 {
-    qDebug() << Q_FUNC_INFO << ":" << idx;
     const QStringList tracks = (m_mediaMode=="video")?m_videoTracks:m_audioTracks;
 
     if (((idx+1)>0)&&(idx<tracks.count())) {
@@ -224,9 +220,7 @@ void MediaPlayerController::setTrackByIndex(const int idx)
         m_switchingTracks=true;
         setTrack(str);
         m_switchingTracks=false;
-        setTrack(tracks.at(m_trackIndex));
         emit trackIndexChanged(m_trackIndex);
-
 //        playTrack(); // automatically start playing when a song is selected, TODO: make this configurable
     }
     else
@@ -235,15 +229,12 @@ void MediaPlayerController::setTrackByIndex(const int idx)
 
 void MediaPlayerController::setNextTrack()
 {
-    const QStringList tracks = (m_mediaMode=="video")?m_videoTracks:m_audioTracks;
     int idx=m_trackIndex+1;
-    if (idx==tracks.count()&&m_loopAtEnd) idx=0;
+    if (idx==m_audioTracks.count()&&m_loopAtEnd) idx=0;
     setTrackByIndex(idx);
 }
 
 void MediaPlayerController::setPreviousTrack()
 {
-    int idx=m_trackIndex-1;
-    if (idx < 0) idx=0;
-    setTrackByIndex(idx);
+    setTrackByIndex(m_trackIndex-1);
 }

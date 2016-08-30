@@ -49,11 +49,6 @@ public:
     const QSet<QString> supportedFileSuffixes() const;
     PlayState playState() const {return m_playState;}
     int currentTrackIndex() const;
-    QQuickView * getPlayer()
-    {
-        return m_playerView;
-    }
-
 
 //    QQmlEngine * engine() const;
 //    QUrl qml() const;

@@ -40,24 +40,17 @@ VideoOutput{
         id: mediaPlayer
         objectName: "mediaPlayer"
         source: mediaPlayerController.track
-        autoLoad: false
+        autoLoad: true
         autoPlay: false
         onSourceChanged: {
             console_log("source changed to", source)
-//            mediaPlayerController.
         }
         onPlaybackStateChanged: mediaPlayerController.setPlaybackState(playbackState)
-
     }
     Connections {
         target: mediaPlayerController
         onPlay: mediaPlayer.play()
         onPause: mediaPlayer.pause()
         onStop: mediaPlayer.stop()
-        onTrackChanged: {
-            mediaPlayer.stop();
-            mediaPlayer.play();
-//            mediaPlayer.source = mediaPlayerController.track;
-        }
     }
 }

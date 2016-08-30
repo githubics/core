@@ -30,6 +30,7 @@ class MediaPlayerController : public QObject
     Q_OBJECT
     Q_PROPERTY(QString track READ track  WRITE setTrack  NOTIFY trackChanged)
     Q_PROPERTY(QString mediaMode READ mediaMode  WRITE setMediaMode  NOTIFY mediaModeChanged)
+
     Q_PROPERTY(QString trackTitle READ trackTitle WRITE setTrackTitle NOTIFY trackTitleChanged)
     Q_PROPERTY(QString trackPerformer READ trackPerformer WRITE setTrackPerformer NOTIFY trackPerformerChanged)
     Q_PROPERTY(QString trackAlbum READ trackAlbum WRITE setTrackAlbum NOTIFY trackAlbumChanged)
