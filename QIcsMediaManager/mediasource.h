@@ -74,7 +74,7 @@ public slots:
      *  to this slot and that sets the new playlist. MediaSource emits the mediaSourcePlaylistChanged
      *  signal when this function exits.
      **/
-    void setMediaSourcePlaylist();
+    void onMediaPlaylistUpdated();
 
 private:
     Playlist m_playlist;

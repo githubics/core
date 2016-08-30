@@ -31,7 +31,7 @@ MediaSource::MediaSource(QObject * parent)
 {
 }
 
-void MediaSource::setMediaSourcePlaylist()
+void MediaSource::onMediaPlaylistUpdated()
 {
     qDebug() << Q_FUNC_INFO;
     emit mediaSourcePlaylistChanged(this);
