@@ -47,7 +47,7 @@ public:
     QIcsMediaPlayer(QObject *parent = 0);
     void setMediaPlaylist(const QStringList playList);
     const QSet<QString> supportedFileSuffixes() const;
-    PlayState playState() const {return m_playState;}
+    PlayState playState() const {return translatePlayState(m_audioVideoPlayerController->playbackState()) ;}
     int currentTrackIndex() const;
 
 //    QQmlEngine * engine() const;
@@ -59,9 +59,11 @@ protected:
     QQuickWindow * m_window;
     QQuickView * m_playerView;
 
-    QStringList m_mediaPlaylist;
+//    QStringList m_mediaPlaylist;
     QString m_currentlyPlaying;
-    mutable PlayState m_playState;
+
+//    mutable PlayState m_playState;
+
     quint16 m_progress;
     quint8 m_currentVolume;
 
@@ -86,7 +88,9 @@ private:
     QQmlApplicationEngine * m_engine;
     QString m_currentMedia;
     MediaPlayerController * m_audioVideoPlayerController;
-    void translatePlayState() const;
+
+    void sendPlayState(MediaPlayerController::PlaybackState state) const;
+    QIcsMediaPlayer::PlayState translatePlayState(MediaPlayerController::PlaybackState state) const;
 };
 
 #endif // QICSMEDIAPLAYER_H

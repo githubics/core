@@ -186,7 +186,7 @@ void MediaManager::createMediaSource(const QString typeStr, const QUrl deviceUrl
         ms->playlist()->deviceUrl=deviceUrl.toLocalFile();
 
         // TODO: Should consolidate these two into one...
-        connect(mdi,&MediaDeviceInterface::mediaPlaylistUpdated,ms,&MediaSource::setMediaSourcePlaylist);
+        connect(mdi,&MediaDeviceInterface::mediaPlaylistUpdated,ms,&MediaSource::onMediaPlaylistUpdated);
         connect(ms, &MediaSource::mediaSourcePlaylistChanged, this, &MediaManager::updateMediaSession);
 
         mdi->updateMediaPlaylist(ms->playlist());

@@ -16,6 +16,10 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
+#ifndef QT_NO_DEBUG_OUTPUT
+//#define QT_NO_DEBUG_OUTPUT
+#endif
+#include <QDebug>
 #include "qicsmediaplayer.h"
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -29,11 +33,21 @@ QIcsMediaPlayer::QIcsMediaPlayer(QObject *parent)
     m_playerView->engine()->rootContext()->setContextProperty("mediaPlayerController", m_audioVideoPlayerController);
     m_playerView->setSource(QUrl(QStringLiteral("qrc:/mediaplayer/main.qml")));
     m_playerView->setFlags(Qt::FramelessWindowHint);
+
+    connect(m_audioVideoPlayerController,&MediaPlayerController::playbackStateChanged,this,&QIcsMediaPlayer::sendPlayState);
+    m_audioVideoPlayerController->setPlaybackState(MediaPlayerController::StoppedState);
+    connect(m_audioVideoPlayerController,&MediaPlayerController::trackIndexChanged,this,&MediaPlayerInterface::currentTrackIndexChanged);
 }
 
 void QIcsMediaPlayer::setMediaPlaylist(const QStringList playList)
 {
     m_audioVideoPlayerController->setVideoTracks(playList);
+}
+
+void QIcsMediaPlayer::setCurrentTrack(int index) const
+{
+    m_audioVideoPlayerController->setTrackByIndex(index);
+    m_audioVideoPlayerController->playTrack();
 }
 
 const QSet<QString> QIcsMediaPlayer::supportedFileSuffixes() const
@@ -43,49 +57,55 @@ const QSet<QString> QIcsMediaPlayer::supportedFileSuffixes() const
     return suffixes;
 }
 
+void QIcsMediaPlayer::sendPlayState(MediaPlayerController::PlaybackState state) const
+{
+    PlayState playState=translatePlayState(state);
+    emit playStateChanged(playState);
+}
 
 int QIcsMediaPlayer::currentTrackIndex() const
 {
     return m_audioVideoPlayerController->trackIndex();
 }
 
-
 void QIcsMediaPlayer::play() const
 {
+    // TODO get from the controller if we are in video or audio mode
     if (!m_playerView->isVisible()){
-
         m_playerView->show();
     } else {
         m_playerView->raise();
     }
     m_audioVideoPlayerController->playTrack();
-    translatePlayState();
 }
 
 void QIcsMediaPlayer::pause() const
 {
     m_audioVideoPlayerController->pauseTrack();
-    translatePlayState();
+//    translatePlayState();
 }
 
 void QIcsMediaPlayer::stop() const
 {
     m_audioVideoPlayerController->stopTrack();
     if (m_playerView->isVisible()) m_playerView->hide();
-    translatePlayState();
+//    translatePlayState();
 }
 
 void QIcsMediaPlayer::next() const
 {
     m_audioVideoPlayerController->setNextTrack();
-    translatePlayState();
+    m_audioVideoPlayerController->playTrack();
+//    translatePlayState();
 
 }
 
 void QIcsMediaPlayer::previous() const
 {
     m_audioVideoPlayerController->setPreviousTrack();
-    translatePlayState();
+    m_audioVideoPlayerController->playTrack();
+
+//    translatePlayState();
 }
 
 // TODO: Implement adding and removing of playlist components
@@ -115,28 +135,26 @@ void QIcsMediaPlayer::decrementCurrentVolume()
 //    m_mediaPlayer->setVolume(m_currentVolume);
 }
 
-void QIcsMediaPlayer::setCurrentTrack(int index) const
-{
-    if(index < m_mediaPlaylist.count() &&m_audioVideoPlayerController->trackIndex() != index)
-        m_audioVideoPlayerController->setTrackByIndex(index);
-}
 
 void QIcsMediaPlayer::setVideoRectangle(const QRect videoRect) const
 {
     m_playerView->setGeometry(videoRect);
 }
 
-void QIcsMediaPlayer::translatePlayState() const
+QIcsMediaPlayer::PlayState QIcsMediaPlayer::translatePlayState(MediaPlayerController::PlaybackState state) const
 {
-    switch (m_audioVideoPlayerController->playbackState()) {
+    PlayState playState;
+
+    switch (state) {
     case MediaPlayerController::StoppedState:
-        m_playState=mmTypes::Stopped;
+        playState=mmTypes::Stopped;
         break;
     case MediaPlayerController::PausedState:
-        m_playState=mmTypes::Paused;
+        playState=mmTypes::Paused;
         break;
     case MediaPlayerController::PlayingState:
-        m_playState=mmTypes::Playing;
+        playState=mmTypes::Playing;
         break;
     }
+    return playState;
 }
