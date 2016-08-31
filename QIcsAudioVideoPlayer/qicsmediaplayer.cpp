@@ -32,7 +32,7 @@ QIcsMediaPlayer::QIcsMediaPlayer(QObject *parent)
     Q_INIT_RESOURCE(qml);
     m_playerView->engine()->rootContext()->setContextProperty("mediaPlayerController", m_audioVideoPlayerController);
     m_playerView->setSource(QUrl(QStringLiteral("qrc:/mediaplayer/main.qml")));
-    m_playerView->setFlags(Qt::FramelessWindowHint);
+    m_playerView->setFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
 
     connect(m_audioVideoPlayerController,&MediaPlayerController::playbackStateChanged,this,&QIcsMediaPlayer::sendPlayState);
     m_audioVideoPlayerController->setPlaybackState(MediaPlayerController::StoppedState);
