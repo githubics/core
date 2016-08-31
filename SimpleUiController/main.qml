@@ -62,7 +62,10 @@ Rectangle{
                 right: sessionColumn.right
             }
             enabled: controller.activeMediaSession !== "AudioFile"
-            onClicked: controller.activeMediaSession = "AudioFile"
+            onClicked: {
+                controller.stop()
+                controller.activeMediaSession = "AudioFile"
+            }
             activated: !enabled
 
         }
@@ -76,7 +79,10 @@ Rectangle{
                 right: sessionColumn.right
             }
             enabled: controller.activeMediaSession !== "VideoFile"
-            onClicked: controller.activeMediaSession = "VideoFile"
+            onClicked: {
+                controller.stop()
+                controller.activeMediaSession = "VideoFile"
+            }
             activated: !enabled
         }
 
