@@ -46,7 +46,14 @@ void QIcsMediaPlayer::setMediaPlaylist(const QStringList playList)
 
 void QIcsMediaPlayer::setCurrentTrack(int index) const
 {
+
     m_audioVideoPlayerController->setTrackByIndex(index);
+
+    if (!m_playerView->isVisible()){
+        m_playerView->show();
+    } else {
+        m_playerView->raise();
+    }
     m_audioVideoPlayerController->playTrack();
 }
 
