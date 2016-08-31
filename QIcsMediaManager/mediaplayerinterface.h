@@ -54,6 +54,7 @@ public slots:
     virtual void next() const = 0;
     virtual void previous() const = 0;
     virtual void setCurrentTrack(int index) const = 0;
+    virtual void setActiveMediaSession(const QString mediaSession) const {Q_UNUSED(mediaSession);}
     virtual void setVideoRectangle(const QRect rect) const {Q_UNUSED(rect);}
 
 signals:
