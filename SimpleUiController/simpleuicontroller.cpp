@@ -55,10 +55,11 @@ SimpleUiController::SimpleUiController()
     // All views opened should be set to FramelessWindowHint. Doing it in main is not a good idea because
     // some windows might not get created until later. We can create a MediaManager QuickView base class
     // and set the window flags we want there at some point if we think it is needed
-//    quickView->setFlags(Qt::FramelessWindowHint);
+    quickView->setFlags(Qt::FramelessWindowHint);
 
 // FIXME: For a quick demo on the ICS 3 screen setup
 //    quickView->setX(2480);quickView->setY(200);
+
     quickView->setMinimumSize(QSize(800,480));
     quickView->show();
 }

@@ -74,7 +74,9 @@ void SimpleDeviceManager::deviceChanged()
     }
     // check whether one was inserted
     foreach(QString nudir, entryList) {
+        // TODO: create a blacklist
         if (nudir.startsWith("Macintosh")) continue;
+        if (nudir.startsWith("e5e1d749")) continue;
         if (!m_devices.contains(nudir)) {
             qDebug() << Q_FUNC_INFO << "found device:" << nudir;
             m_devices.append(nudir);
