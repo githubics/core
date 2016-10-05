@@ -4,9 +4,9 @@ SimpleUiController \
 SimpleDeviceManager \
 FileSystemDevice
 
-# not building the Qt based players for Genivi platforms
-!linux-oe-g++ {
+# if not building the Qt based players for Genivi platforms comment out the following lines
+# !linux-oe-g++ {
     SUBDIRS += \
     QIcsAudioVideoPlayer \
     QIcsMediaPlayer \
-}
+# }
