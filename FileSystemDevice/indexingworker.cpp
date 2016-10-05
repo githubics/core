@@ -29,6 +29,11 @@
 #define QSLWSTR( _ARG_ ) QStringLiteral( _ARG_ ).toStdWString()
 #endif
 
+// These delimiters signal end of line and end of parameter,
+// if these by any chance show up as part of a file name we are in trouble
+#define MI_EOL_DELIMITER "|^"
+#define MI_EOP_DELIMITER "|+"
+
 void IndexingWorker::startIndexing(MediaDeviceInterface::Playlist * playlist)
 {
     Q_ASSERT(playlist!=0);
@@ -68,9 +73,9 @@ void IndexingWorker::mediaInfo(const QStringList fileList, MediaDeviceInterface:
     QString generalInform;
     generalInform="General;";
     foreach(QString s, generalParams) {
-        generalInform += QString("\%%1\%|").arg(s);
+        generalInform += QString("\%%1\%%2").arg(s).arg(MI_EOP_DELIMITER);
     }
-    generalInform+="\\n";
+    generalInform+=MI_EOL_DELIMITER;
     MediaInfoLib::MediaInfoList MI;
     MI.Option(QSLWSTR("ParseSpeed"), QSLWSTR("0"));
     MI.Option(QSLWSTR("Language"), QSLWSTR("raw"));
@@ -90,11 +95,11 @@ void IndexingWorker::mediaInfo(const QStringList fileList, MediaDeviceInterface:
     QString informOptionExample=QString::fromStdWString(MI.Inform());
 //    qDebug() << Q_FUNC_INFO << qPrintable("\r\n\r\nGeneral Inform\r\n") << qPrintable(informOptionExample);
 
-    QStringList informResult=informOptionExample.split('\n',QString::SkipEmptyParts);
+    QStringList informResult=informOptionExample.split(MI_EOL_DELIMITER,QString::SkipEmptyParts);
     QVariantMap resMap;
     foreach (QString res, informResult) {
 //        qDebug() << Q_FUNC_INFO << res;
-        QStringList resList=res.split("|");
+        QStringList resList=res.split(MI_EOP_DELIMITER);
 //        qDebug() << resList.count() << generalParams.count();
         Q_ASSERT((resList.count()-1)==generalParams.count());
         for (int i=0;i<resList.count()-1;++i) {
